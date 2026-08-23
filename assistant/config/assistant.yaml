@@ -1,0 +1,32 @@
+# assistant.yaml
+# Central configuration. Nothing in code should hardcode paths or model params —
+# everything tunable lives here so the system stays inspectable/editable.
+
+app:
+  name: "assistant"          # placeholder — rename once you've picked a name
+  log_level: "INFO"          # DEBUG | INFO | WARNING | ERROR
+  data_dir: "../memory_data"
+
+model:
+  backend: "ollama"          # "ollama" or "llamacpp"
+  ollama_model: "qwen2.5:3b" # name as shown in `ollama list`
+  ollama_host: "http://localhost:11434"
+  path: "../models/qwen2.5-3b-instruct-q4.gguf"  # only used if backend is llamacpp
+  context_length: 4096
+  gpu_layers: -1
+  threads: 6          # CPU threads for layers not on GPU
+
+generation:
+  max_tokens: 512
+  temperature: 0.8
+  top_p: 0.9
+  repeat_penalty: 1.1
+  stream: true
+
+persona:
+  active: "default"          # matches a file in persona/personas/<name>.md
+
+session:
+  # How much recent conversation (in turns) gets kept in the live prompt
+  # before older turns fall back to episode/memory retrieval instead.
+  max_turns_in_context: 12

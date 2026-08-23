@@ -1,0 +1,14 @@
+# config/actions.yaml — the ONLY apps the assistant may launch.
+#
+# Keys are what you say ("open <key>"), values are the exact command as an
+# argument list. Entries are passed straight to subprocess as argv — never
+# through a shell — so forward slashes are preferred and spaces need no
+# quoting. Anything not listed here is refused without executing anything.
+#
+# Paths below are placeholders — point them at real installs on this machine.
+
+spotify:
+  - C:/Program Files/Spotify/Spotify.exe
+
+notepad:
+  - notepad.exe   # resolves via PATH/System32, so this one works as-is

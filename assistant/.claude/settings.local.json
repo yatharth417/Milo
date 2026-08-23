@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ollama list *)",
+      "Bash(curl -s -m 5 http://localhost:11434/api/tags)",
+      "Bash(PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe main.py --mock)",
+      "Bash(echo \"--- exit: $? ---\")",
+      "Bash(PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe main.py)",
+      "Bash(rm real_stderr.log)",
+      "Bash(PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe *)"
+    ]
+  }
+}

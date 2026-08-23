@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+models/
+memory_data/*
+!memory_data/.gitkeep

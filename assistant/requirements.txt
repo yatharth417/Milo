@@ -1,0 +1,6 @@
+PyYAML>=6.0
+requests>=2.31  # used by the Ollama backend in mind/chat_engine.py
+# llama-cpp-python is required for real inference (not the mock backend).
+# Install separately with GPU build flags appropriate to your hardware, e.g.:
+#   CMAKE_ARGS="-DGGML_CUDA=on" pip install llama-cpp-python
+pytest>=8.0
