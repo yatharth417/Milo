@@ -17,6 +17,7 @@ Two tiers, deliberately simple:
 from __future__ import annotations
 
 import logging
+import re
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
@@ -25,6 +26,14 @@ log = logging.getLogger(__name__)
 RETENTION_DAYS = 7
 JOURNAL_CHAR_BUDGET = 6000   # rough cap so a week of chat doesn't blow the prompt
 LONG_TERM_CHAR_BUDGET = 2000
+
+# One stored long-term fact line: "- (YYYY-MM-DD) fact text".
+FACT_LINE_RE = re.compile(r"^- \(\d{4}-\d{2}-\d{2}\)\s+(.*)$")
+
+
+def _normalized(text: str) -> str:
+    """Lowercase with whitespace collapsed — the form facts are deduped in."""
+    return " ".join(text.lower().split())
 
 
 class MemoryStore:
@@ -43,6 +52,8 @@ class MemoryStore:
 
     def log_turn(self, role: str, text: str) -> None:
         timestamp = datetime.now().strftime("%H:%M")
+        # Flatten newlines so every entry stays on exactly one physical line.
+        text = " ".join(text.split())
         line = f"- **{timestamp} {role}:** {text}\n"
         with self._today_path().open("a", encoding="utf-8") as f:
             f.write(line)
@@ -79,6 +90,13 @@ class MemoryStore:
     # ---------- long-term (explicit, permanent) ----------
 
     def remember_fact(self, text: str) -> None:
+        # Skip if the same fact (ignoring case and whitespace) is already stored.
+        wanted = _normalized(text)
+        for line in self.long_term_path.read_text(encoding="utf-8").splitlines():
+            match = FACT_LINE_RE.match(line.strip())
+            if match and _normalized(match.group(1)) == wanted:
+                log.info("Skipping duplicate fact: %s", text)
+                return
         timestamp = date.today().isoformat()
         with self.long_term_path.open("a", encoding="utf-8") as f:
             f.write(f"- ({timestamp}) {text}\n")

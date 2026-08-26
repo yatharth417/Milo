@@ -7,7 +7,21 @@
       "Bash(echo \"--- exit: $? ---\")",
       "Bash(PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe main.py)",
       "Bash(rm real_stderr.log)",
-      "Bash(PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe *)"
+      "Bash(PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe *)",
+      "Bash(.venv/Scripts/python.exe --version)",
+      "Bash(.venv/Scripts/python.exe -m pip --version)",
+      "Bash(.venv/Scripts/python.exe -m pip list)",
+      "WebFetch(domain:k2-fsa.github.io)",
+      "Bash(mkdir *)",
+      "Bash(curl -s --max-time 60 \"https://api.github.com/repos/k2-fsa/sherpa-onnx/releases/tags/asr-models\")",
+      "Bash(tar -xjf whisper-small.en.tar.bz2 -C stt --strip-components=1)",
+      "Bash(rm whisper-small.en.tar.bz2)",
+      "Bash(PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe -m py_compile voice/stt.py)",
+      "PowerShell(python -m py_compile memory/store.py main.py voice/pipeline.py; if \\($?\\) { \"compile OK\" })",
+      "PowerShell(ollama list *)",
+      "PowerShell(python poc_tool_routing_test.py --smoke)",
+      "PowerShell(python poc_tool_routing_test.py)",
+      "PowerShell(python poc_tool_routing_test.py --system strict)"
     ]
   }
 }

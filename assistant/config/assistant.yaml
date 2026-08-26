@@ -9,7 +9,7 @@ app:
 
 model:
   backend: "ollama"          # "ollama" or "llamacpp"
-  ollama_model: "qwen2.5:3b" # name as shown in `ollama list`
+  ollama_model: "qwen3.5:2b" # name as shown in `ollama list`
   ollama_host: "http://localhost:11434"
   path: "../models/qwen2.5-3b-instruct-q4.gguf"  # only used if backend is llamacpp
   context_length: 4096
@@ -30,3 +30,8 @@ session:
   # How much recent conversation (in turns) gets kept in the live prompt
   # before older turns fall back to episode/memory retrieval instead.
   max_turns_in_context: 12
+
+voice:
+  enabled: true
+  stt_model_dir: "../../models/voice/stt"
+  tts_model_dir: "../../models/voice/tts"

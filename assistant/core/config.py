@@ -55,12 +55,20 @@ class SessionConfig:
 
 
 @dataclass
+class VoiceConfig:
+    enabled: bool
+    stt_model_dir: Path
+    tts_model_dir: Path
+
+
+@dataclass
 class Config:
     app: AppConfig
     model: ModelConfig
     generation: GenerationConfig
     persona: PersonaConfig
     session: SessionConfig
+    voice: VoiceConfig
     root_dir: Path  # directory the config file lives in, for resolving relative paths
 
 
@@ -117,6 +125,13 @@ def load_config(path: str | Path = "config/assistant.yaml") -> Config:
         session = SessionConfig(
             max_turns_in_context=int(raw["session"]["max_turns_in_context"])
         )
+        # Voice is optional: absent section = text-only behavior, unchanged.
+        voice_raw = raw.get("voice", {})
+        voice = VoiceConfig(
+            enabled=bool(voice_raw.get("enabled", False)),
+            stt_model_dir=_resolve(root_dir, voice_raw.get("stt_model_dir", "../models/voice/stt")),
+            tts_model_dir=_resolve(root_dir, voice_raw.get("tts_model_dir", "../models/voice/tts")),
+        )
     except KeyError as e:
         raise ConfigError(f"Missing required config key: {e}") from e
 
@@ -126,6 +141,7 @@ def load_config(path: str | Path = "config/assistant.yaml") -> Config:
         generation=generation,
         persona=persona,
         session=session,
+        voice=voice,
         root_dir=root_dir,
     )
 

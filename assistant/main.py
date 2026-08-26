@@ -51,6 +51,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Use the mock model backend instead of loading real weights",
     )
+    parser.add_argument(
+        "--voice",
+        action="store_true",
+        help="Push-to-talk: Enter to record, Enter to stop; spoken replies via TTS",
+    )
     return parser.parse_args()
 
 
@@ -130,12 +135,39 @@ def main() -> None:
         stream=cfg.generation.stream,
     )
 
+    voice = None
+    if args.voice:
+        # Built up front so missing models/packages fail with one clear
+        # message here instead of an exception mid-conversation.
+        if not cfg.voice.enabled:
+            print("Voice is disabled — set voice.enabled: true in config/assistant.yaml.")
+            raise SystemExit(1)
+        try:
+            from voice.pipeline import VoiceInitError, VoicePipeline
+
+            voice = VoicePipeline(cfg.voice)
+        except VoiceInitError as e:
+            print(f"Voice init failed: {e}")
+            raise SystemExit(1)
+
     print(f"--- {cfg.app.name} (persona: {persona.name} v{persona.version}) ---")
     print("Type /exit to quit, /reset to clear session context.\n")
 
     try:
         while True:
-            user_input = terminal.get_user_input()
+            if voice is None:
+                user_input = terminal.get_user_input()
+            else:
+                try:
+                    user_input = voice.listen()
+                    if user_input:
+                        print(f"you (spoken): {user_input}")
+                except EOFError:
+                    break  # stdin closed
+                except Exception as e:
+                    # A dead mic or failed decode costs one turn, not the session.
+                    print(f"(voice problem: {e} — type this turn instead)")
+                    user_input = terminal.get_user_input()
 
             if user_input.strip() in EXIT_COMMANDS:
                 break
@@ -188,6 +220,12 @@ def main() -> None:
                     for chunk in engine.stream_response(prompt, gen_params):
                         terminal.stream_token(chunk)
                         full_response.append(chunk)
+                except KeyboardInterrupt:
+                    # Ctrl-C mid-generation ends this turn, not the session —
+                    # the outer handler stays for Ctrl-C at the input prompt.
+                    terminal.newline()
+                    print("(cancelled)")
+                    continue
                 except Exception:
                     # A backend failure (Ollama down, mid-stream drop) should
                     # cost this turn, not the whole session.
@@ -200,6 +238,9 @@ def main() -> None:
                 response_text = "".join(full_response).strip()
                 state.add_turn(Role.ASSISTANT, response_text)
                 memory.log_turn("assistant", response_text)
+
+            if voice is not None and response_text:
+                voice.say(response_text)
 
     except KeyboardInterrupt:
         pass
